@@ -54,7 +54,7 @@ var MrtStation = function(){
 	this.transferTime = 0;
 };
 //load and render
-var loader = new MultiDataLoader(['mrt.csv', 'in.csv', 'out.csv', 'mrtTransportation.csv']);
+var loader = new MultiDataLoader(['mrt.csv', 'in.csv', 'out.csv']);
 loader.addListener('dataLoaded', function(evt){
 	processData();
 	initializeCharts();
@@ -65,7 +65,7 @@ var processData = function(){
 	var stationInfo = rawData[0];
 	var passengerIn = rawData[1];
 	var passengerOut = rawData[2];
-	var transferInfo = rawData[3];
+	//var transferInfo = rawData[3];
 
 	var stationList = Object.keys(rawData[1][0]);
 	stationList.shift(); //remove date key

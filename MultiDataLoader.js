@@ -17,7 +17,7 @@ var MultiDataLoader = function(urlArray){
 		__fileCount : {
 			value : urlArray.length
 		},
-		__fileLoaded : {
+		__fileLoadedCount : {
 			value : 0,
 			writable: true
 		}
@@ -27,31 +27,39 @@ var csv = d3.dsv(",", "text/csv; charset=big5");
 MultiDataLoader.prototype = Object.create(EventTarget.prototype, {
 	startLoading : {
 		value : function(){
-			var loader = this;
-			for(var i = 0, n = this.__url.length; i < n; i++){
-				var dataurl = this.__url[i];
-				var dataType = dataurl.split(".")[1];
-				if(dataType === "json"){
-					d3.json(dataurl, function(d){
-						loader.fileLoaded(d);	
-					});
-				}else if(dataType === "csv"){
-					csv(dataurl, function(d){
-						loader.fileLoaded(d);
-					});
-				}
-			}			
+			var dataurl = this.__url[this.__fileLoadedCount];
+			csv(dataurl, function(d){
+				loader.fileLoaded(d);
+				return;
+			});
+			// for(var i = 0, n = this.__url.length; i < n; i++){
+			// 	var dataurl = this.__url[i];
+			// 	var dataType = dataurl.split(".")[1];
+			// 	if(dataType === "json"){
+			// 		d3.json(dataurl, function(d){
+			// 			loader.fileLoaded(d);	
+			// 		});
+			// 	}else if(dataType === "csv"){
+			// 		csv(dataurl, function(d){
+			// 			loader.fileLoaded(d);
+			// 			return;
+			// 		});
+			// 	}
+			// }			
 		},
 		enumerable : true
 	},
 	fileLoaded : {
 		value : function(d){
+			console.log(this.__fileLoadedCount);
 			rawData.push(d);
-			this.__fileLoaded ++;			
-			if(this.__fileLoaded === this.__fileCount){
+			this.__fileLoadedCount ++;			
+			if(this.__fileLoadedCount === this.__fileCount){
 				this.__fire(
 					new DataLoadedEvent(d)
 				);
+			}else{
+				this.startLoading();
 			}
 		},
 		enumerable : true
