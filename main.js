@@ -1,4 +1,6 @@
-var rawData = [];
+/*
+*	This project is under development.
+*/
 
 var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
@@ -6,23 +8,16 @@ var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/
 	minZoom: 12,
 	maxZoom: 17
 });
-//Load leaflet map. 
+//Load and initialize leaflet map. 
 var map = L.map('map').setView([25.046374, 121.517896], 13);
-
-mapLink = 
-    '<a href="http://openstreetmap.org">OpenStreetMap</a>';
-// L.tileLayer(
-//     'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//     attribution: '&copy; ' + mapLink + ' Contributors',
-//     maxZoom: 18,
-//     }).addTo(map);
+mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
 CartoDB_DarkMatter.addTo(map);
 map._initPathRoot();
 
-var pie = d3.layout.pie().sort(null);
-
+//initialize d3
+// var pie = d3.layout.pie().sort(null);
 var svg = d3.select("#map").select('svg');
-var mrtCharts;
+
 
 var colorScale = d3.scale.ordinal()
 					.range(["#17becf", "#d62728"])
@@ -34,20 +29,16 @@ var countScale = d3.scale.linear()
 var zoomScale = d3.scale.ordinal()
 				.domain([12, 13, 14, 15, 16, 17])
 				.range([1, 2, 3, 5, 8 ,10]);
-
-//var dateInput = document.getElementById("currentDate");
-
-var loader = new MultiDataLoader(['mrt.csv', 'in.csv', 'out.csv', 'mrtTransportation.csv']);
-loader.addListener('dataLoaded', function(evt){
-	processData();
-	initializeCharts();
-});
-loader.startLoading();
-
 var timeInputFormat = d3.time.format("%Y-%m-%d");
 var timeDataFormat = d3.time.format("%Y/%m/%d");
+var countFormat = d3.format([","]);
 
+var dateInput = document.getElementById("currentDate");
+//Global variables
+var rawData = [];
 var mrtDataset = [];
+var mrtCharts;
+var stationMarkerSize = 6;
 
 var MrtStation = function(){
 	this.address = "";
@@ -62,6 +53,13 @@ var MrtStation = function(){
 	this.passengerCount = {};
 	this.transferTime = 0;
 };
+//load and render
+var loader = new MultiDataLoader(['mrt.csv', 'in.csv', 'out.csv', 'mrtTransportation.csv']);
+loader.addListener('dataLoaded', function(evt){
+	processData();
+	initializeCharts();
+});
+loader.startLoading();
 
 var processData = function(){
 	var stationInfo = rawData[0];
@@ -164,50 +162,62 @@ var processData = function(){
 		//Create LatLng object for Leaflet map	
 		element.LatLng = new L.LatLng(element.lat, element.lng);
 	});
-
 }
 
-
-
 //Rendering phase
+var appendInfoBlock = function(station){
+	var pos = map.latLngToLayerPoint(station.LatLng);
+	var textWidth = station.stationName.length * 12;
+	var currentDate = dateInput.value;
+	svg.append("text")
+		.attr("class", "tip")
+		.text(station.stationName)
+		.attr("pointer-events", "none")
+		.attr("text-anchor", "middle")
+		.attr("x", pos.x)
+		.attr("y", pos.y + 4)
+		.attr("fill", "#fff");
+	var infoBlock = d3.select('#info').classed('hidden', false);
+	infoBlock.selectAll("ul").remove();
+	var str1 = "站名: " + station.stationName;
+	var str2 = "進站人數: " + countFormat(station.passengerCount[currentDate].in);
+	var str3 = "出站人數: " + countFormat(station.passengerCount[currentDate].out);
+	var str4 = "捷運路線: ";
+	var list = infoBlock.append("ul");
+	list.append("li").html(str1);
+	list.append("li").html(str2);
+	list.append("li").html(str3);
+	if(station.line.length > 1){
+		for(var i = 0, n = station.line.length; i < n; i++){
+			if(i < (n-1)){
+				str4 += station.line[i] + ", ";
+			}else{
+				str4 += station.line[i];
+			}		
+		}
+	}else{
+		str4 += station.line[0];
+	}
+	list.append("li").html(str4);
+
+};
 
 var initializeCharts = function(){
 	var currentZoom = map.getZoom();
-	var dateInput = "2015-04-01";
+	var currentDate = dateInput.value;
 	var countDomainMin = d3.min([rawData[1][0].min, rawData[2][0].min]);
 	var countDomainMax = d3.max([rawData[1][0].max, rawData[2][0].max]);
 	countScale.domain([countDomainMin, countDomainMax]);
-
 	//update scale.domain according to date
 	mrtCharts = svg.selectAll('g.stationChart')
 				.data(mrtDataset)
 				.enter().append("g")
 				.attr('class', 'stationChart')							
 				.on("mouseenter", function(d){
-					var pos = map.latLngToLayerPoint(d.LatLng);
-					var textWidth = d.stationName.length * 12;
-					svg.append("rect")
-						.attr("class", "tipBackgroud")
-						.attr("pointer-events", "none")
-						.attr("stroke", "#fff")		
-						.attr("stroke-width", 1)						
-						.attr("width", textWidth + 20)
-						.attr("height", 32)
-						.attr("x", pos.x - (textWidth + 20)*0.5)
-						.attr("y", pos.y - 32)
-						.attr("rx", 4)
-						.attr("ry", 4);
-
-					svg.append("text")
-						.attr("class", "tip")
-						.text(d.stationName)
-						.attr("pointer-events", "none")
-						.attr("text-anchor", "middle")
-						.attr("x", pos.x)
-						.attr("y", pos.y - 12)
-						.attr("fill", "#fff");
+					appendInfoBlock(d);
 				})
 				.on("mouseleave", function(d){
+					var infoBlock = d3.select('#info').classed('hidden', true);
 					svg.selectAll(".tip")
 						.remove();
 					svg.selectAll(".tipBackgroud")
@@ -215,12 +225,12 @@ var initializeCharts = function(){
 				});
 
 	mrtCharts.append('circle')
-			.attr('class', 'info')
-			.style("fill-opacity", 0.25) 					
+			.attr('class', 'info')						
 			.attr("stroke-width", 1)	
 			.attr("stroke", "#666")		
+			.style("fill-opacity", 0.25) 		
 			.style("fill", "#fff")
-			.attr("r", function(){return zoomScale(currentZoom)*5;});  			
+			.attr("r", function(){return zoomScale(currentZoom)*stationMarkerSize;});  			
 
 	mrtCharts.append('circle')
 				.attr('class', 'inCount')
@@ -234,22 +244,22 @@ var initializeCharts = function(){
 					}else{
 						var lineId = d.stationId[0];
 						if(lineId.match(/BL/)){
-							return '#005eb8';
+							return '#398AFC';
 						}
 						else if(lineId.match(/BR/)){
-							return '#9e652e';
+							return '#CC9900';
 						}
 						else if(lineId.match(/B/)){
-							return '#9e652e';
+							return '#CC9900';
 						}
 						else if(lineId.match(/R/)){
-							return '#cb2c30';
+							return '#FD5B56';
 						}
 						else if(lineId.match(/G/)){
-							return '#007749';
+							return '#009900';
 						}
 						else if(lineId.match(/O/)){
-							return '#ffa300';
+							return '#FFCC66';
 						}
 						else{
 							return 'black';
@@ -259,7 +269,7 @@ var initializeCharts = function(){
 					
 				})	
 				.attr("r", function(d){
-					var count = d.passengerCount[dateInput].in;
+					var count = d.passengerCount[currentDate].in;
 					return Math.sqrt(countScale(count)/Math.PI);
 				});
 
@@ -300,7 +310,7 @@ var initializeCharts = function(){
 				
 			})	
 			.attr("r", function(d){
-				var count = d.passengerCount[dateInput].out;
+				var count = d.passengerCount[currentDate].out;
 				return Math.sqrt(countScale(count)/Math.PI);
 			});
 
@@ -356,33 +366,80 @@ var initializeCharts = function(){
 		var currentZoom = map.getZoom();
 		if(currentZoom > 17) currentZoom = 17;
 		if(currentZoom < 11) currentZoom = 11;
-		//countScale.range([(50^2)*Math.PI*zoomScale(currentZoom), (1000^2)*Math.PI*zoomScale(currentZoom)]);
-		//arc.outerRadius = zoomScale(currentZoom) * countScale(inCount);
+		var currentDate = dateInput.value;
 		mrtCharts.selectAll('circle.info')
+				.transition()
+				.duration(500)
+	    		.ease("cubic-in-out")
 				.attr("r", function(d){
-					return zoomScale(currentZoom)*5;
+					return zoomScale(currentZoom)*stationMarkerSize;
 				});
 		mrtCharts.selectAll('circle.inCount')
+				.transition()
+				.duration(500)
+	    		.ease("cubic-in-out")
 				.attr("r", function(d){
-					var count = d.passengerCount[dateInput].in;
+					var count = d.passengerCount[currentDate].in;
 					return zoomScale(currentZoom)*Math.sqrt(countScale(count)/Math.PI);
 				});
 		mrtCharts.selectAll('circle.outCount')
+				.transition()
+				.duration(500)
+	    		.ease("cubic-in-out")
 				.attr("r", function(d){
-					var count = d.passengerCount[dateInput].out;
+					var count = d.passengerCount[currentDate].out;
 					return zoomScale(currentZoom)*Math.sqrt(countScale(count)/Math.PI);
 				});
-		// arcs.attr("d", function(d, i){
-		// 		var arcGenerator = d3.svg.arc()
-		// 				.innerRadius(10)
-		// 				.outerRadius(
-		// 					zoomScale(currentZoom)*Math.sqrt(countScale(d.value)/Math.PI)
-		// 				);
-		// 		return arcGenerator(d, i);
-		// 	});
 	};
 
 };
 
+var updateCharts = function(){
+	var currentZoom = map.getZoom();
+	var currentDate = dateInput.value;
+	mrtCharts.selectAll('circle.inCount')
+			.transition()
+			.duration(500)
+    		.ease("cubic-in-out")			
+			.attr("r", function(d){
+				var count = d.passengerCount[currentDate].in;
+				return zoomScale(currentZoom)*Math.sqrt(countScale(count)/Math.PI);
+			});
+	mrtCharts.selectAll('circle.outCount')
+			.transition()
+			.duration(500)
+    		.ease("cubic-in-out")
+			.attr("r", function(d){
+				var count = d.passengerCount[currentDate].out;
+				return zoomScale(currentZoom)*Math.sqrt(countScale(count)/Math.PI);
+			});
+};
 
+
+var autoplayDate = 1;
+var autoplayInterval;
+var startAutoPlay = function(evt){
+	d3.select('#autoplay').classed({'hidden': true, 'button': false});
+	d3.select('#stop').classed({'hidden': false, 'button': true});
+	dateInput.value = "2015-04-01"
+	autoplayInterval = setInterval(function() {	  
+		if(autoplayDate < 10){
+			var currentDate = "2015-04-0" + autoplayDate;
+		}else{
+			var currentDate = "2015-04-" + autoplayDate;
+		}
+		dateInput.value = currentDate;
+		updateCharts();
+		autoplayDate ++;
+		if(autoplayDate > 30){
+			autoplayDate = 1;
+		}
+	}, 1000);
+};
+
+var stopAutoPlay = function(evt){
+	d3.select('#autoplay').classed({'hidden': false, 'button': true});
+	d3.select('#stop').classed({'hidden': true, 'button': false});
+	clearInterval(autoplayInterval);
+};
 

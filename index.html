@@ -6,9 +6,10 @@
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css">
 	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>	
 	<style>
-        body {
+        html, body {
             padding: 0;
             margin: 0;
+            font-family: sans-serif;
         }
         html, body, #map {
             height: 100%;
@@ -16,25 +17,81 @@
         }
         #controller{
         	border-radius: 4px;
-		    padding: 20px; 
-        	background: rgba(255,255,255,0.75);
+		    padding: 10px; 
+        	background: transparent;
 			position: absolute;
 			top: 10px;
 			left: 48px;
-			width: 300px;
-			height: 200px;
+			width: 360px;
+			height: 34px;
+			color: white;
 		}
+		#tip{
+        	background: transparent;
+        	position: absolute;
+			top: 12px;
+			left: 380px;
+			width: 360px;
+			height: 100px;
+		}
+		input[type="date"]{
+			font-size: 14px;
+			border:none;
+			background: transparent;
+			color: #ffffff;
+		}
+		input[type="button"]{
+			font-family: 'monospace';
+			background: transparent;
+			color: white;
+			border: 1px solid white;
+		}
+	
+
+		h1, p, ul li, form span, text{  
+		  letter-spacing: 2px; 
+		}
+		div.button{
+			display: inline-block;
+			font-size: 12px;
+			letter-spacing: 1px; 
+			cursor: pointer;
+		}
+
+		.hidden{
+			display: none;
+		}
+
+		ul { list-style:none; border-top:1px solid #ddd; border-bottom:1px solid #ddd; padding:10px 0; }
+		ul li { text-transform:uppercase; padding:0 10px; }
+		ul li a { text-decoration:none; color:#ddd; }
+		ul li a:hover { text-decoration:underline; }
     </style>
 	<title>MrtVisualization</title>
 </head>
 <body>
 	<div id="map"></div>
+	<div id="tip">
+		<svg>
+			<line x1="0" y1="20" x2="50" y2="20" style="stroke:#fff;stroke-width:2; stroke-dasharray:1,3"/>
+			<text x="55" y="26" fill="white">進站人數</text>
+			<line x1="140" y1="20" x2="200" y2="20" style="stroke:#fff;stroke-width:2; stroke-dasharray:20,10"/>
+			<text x="200" y="26" fill="white">出站人數</text>
+		</svg>
+	</div>
 	<div id="controller">
 		<form>
-		  日期:
-		  <input type="date" id="currentDate" value="2015-04-01" min="2015-04-01" max="2015-04-30">
-		  <button type="button">Autoplay</button>
+			<span>紀錄日期 :<span>
+			<input type="date" id="currentDate" value="2015-04-01" min="2015-04-01" max="2015-04-30" oninput="updateCharts()">
+			<div class="button" id="autoplay" onclick="startAutoPlay()">Autoplay</div>
+			<div class="hidden" id="stop" onclick="stopAutoPlay()">Stop</div>
+<!-- 			<button type="button" id="autoplay" onclick="startAutoPlay()">Autoplay</button>
+			<button type="button" id="stop" class="hidden" onclick="stopAutoPlay()">Stop</button> -->
 		</form>
+		<div id="info" class="hidden">
+			<ul>				
+			</ul>
+		</div>
 	</div>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<script src="./eventTarget.js"></script>
