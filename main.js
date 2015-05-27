@@ -152,13 +152,13 @@ var processData = function(){
 		}
 		//
 
-		for(var j = 0, n = transferInfo.length; j < n; j++){
-			var transferName = transferInfo[j].station.replace(/捷運|站/g, "");
-			if(transferName == stationName){
-				element.transferTime = transferInfo[j].Time;
-				break;
-			}
-		}
+		// for(var j = 0, n = transferInfo.length; j < n; j++){
+		// 	var transferName = transferInfo[j].station.replace(/捷運|站/g, "");
+		// 	if(transferName == stationName){
+		// 		element.transferTime = transferInfo[j].Time;
+		// 		break;
+		// 	}
+		// }
 		//Create LatLng object for Leaflet map	
 		element.LatLng = new L.LatLng(element.lat, element.lng);
 	});
