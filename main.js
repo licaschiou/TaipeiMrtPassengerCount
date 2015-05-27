@@ -186,8 +186,8 @@ var appendInfoBlock = function(station){
 	var infoBlock = d3.select('#info').classed('hidden', false);
 	infoBlock.selectAll("ul").remove();
 	var str1 = "站名: " + station.stationName;
-	var str5 = "本月平均進站人數: " + station.passengerCountMean[0];
-	var str6 = "本月平均出站人數: " + station.passengerCountMean[1];
+	var str5 = "本月平均進站人數: " + countFormat(station.passengerCountMean[0]);
+	var str6 = "本月平均出站人數: " + countFormat(station.passengerCountMean[1]);
 	var str2 = "今日進站人數: " + countFormat(station.passengerCount[currentDate].in);
 	var str3 = "今日出站人數: " + countFormat(station.passengerCount[currentDate].out);
 	var str4 = "捷運路線: ";
