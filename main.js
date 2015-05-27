@@ -51,6 +51,7 @@ var MrtStation = function(){
 	this.stationName = "";
 	this.zipcode = "";
 	this.passengerCount = {};
+	this.passengerCountMean= [];
 	this.transferTime = 0;
 };
 //load and render
@@ -120,6 +121,7 @@ var processData = function(){
 			element.stationType = "regular";
 		}
 		//
+		var totalIn = 0;
 		for(var i = 0, n = passengerIn.length; i < n; i++){			
 			var count = parseInt(passengerIn[i][stationName].replace(",", ""));
 			var dateRecord = timeDataFormat.parse(passengerIn[i]["日期"]);
@@ -133,8 +135,10 @@ var processData = function(){
 			}else{
 				element.passengerCount[dateString].in = count;
 			}
-			
+			totalIn += count;			
 		}
+		element.passengerCountMean.push(Math.ceil(totalIn/passengerIn.length));
+		var totalOut = 0;
 		for(var i = 0, n = passengerOut.length; i < n; i++){			
 			var count = parseInt(passengerOut[i][stationName].replace(",", ""));
 			var dateRecord = timeDataFormat.parse(passengerIn[i]["日期"]);
@@ -148,8 +152,10 @@ var processData = function(){
 			}else{
 				element.passengerCount[dateString].out = count;
 			}
-			element.passengerCount[dateString].mean = (element.passengerCount[dateString].in + element.passengerCount[dateString].out)/2;
+			//element.passengerCount[dateString].mean = (element.passengerCount[dateString].in + element.passengerCount[dateString].out)/2;
+			totalOut += count;	
 		}
+		element.passengerCountMean.push(Math.ceil(totalOut/passengerOut.length));
 		//
 
 		// for(var j = 0, n = transferInfo.length; j < n; j++){
@@ -180,11 +186,15 @@ var appendInfoBlock = function(station){
 	var infoBlock = d3.select('#info').classed('hidden', false);
 	infoBlock.selectAll("ul").remove();
 	var str1 = "站名: " + station.stationName;
-	var str2 = "進站人數: " + countFormat(station.passengerCount[currentDate].in);
-	var str3 = "出站人數: " + countFormat(station.passengerCount[currentDate].out);
+	var str5 = "本月平均進站人數: " + station.passengerCountMean[0];
+	var str6 = "本月平均出站人數: " + station.passengerCountMean[1];
+	var str2 = "今日進站人數: " + countFormat(station.passengerCount[currentDate].in);
+	var str3 = "今日出站人數: " + countFormat(station.passengerCount[currentDate].out);
 	var str4 = "捷運路線: ";
 	var list = infoBlock.append("ul");
 	list.append("li").html(str1);
+	list.append("li").html(str5);
+	list.append("li").html(str6);
 	list.append("li").html(str2);
 	list.append("li").html(str3);
 	if(station.line.length > 1){
