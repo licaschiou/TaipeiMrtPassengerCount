@@ -138,6 +138,7 @@ var processData = function(){
 			totalIn += count;			
 		}
 		element.passengerCountMean.push(Math.ceil(totalIn/passengerIn.length));
+		
 		var totalOut = 0;
 		for(var i = 0, n = passengerOut.length; i < n; i++){			
 			var count = parseInt(passengerOut[i][stationName].replace(",", ""));
@@ -186,8 +187,8 @@ var appendInfoBlock = function(station){
 	var infoBlock = d3.select('#info').classed('hidden', false);
 	infoBlock.selectAll("ul").remove();
 	var str1 = "站名: " + station.stationName;
-	var str5 = "本月平均進站人數: " + countFormat(station.passengerCountMean[0]);
-	var str6 = "本月平均出站人數: " + countFormat(station.passengerCountMean[1]);
+	var str5 = "平均進站人數: " + countFormat(station.passengerCountMean[0]);
+	var str6 = "平均出站人數: " + countFormat(station.passengerCountMean[1]);
 	var str2 = "今日進站人數: " + countFormat(station.passengerCount[currentDate].in);
 	var str3 = "今日出站人數: " + countFormat(station.passengerCount[currentDate].out);
 	var str4 = "捷運路線: ";
@@ -426,12 +427,12 @@ var updateCharts = function(){
 };
 
 
-var autoplayDate = 1;
+var autoplayDate;
 var autoplayInterval;
 var startAutoPlay = function(evt){
 	d3.select('#autoplay').classed({'hidden': true, 'button': false});
-	d3.select('#stop').classed({'hidden': false, 'button': true});
-	dateInput.value = "2015-04-01"
+	d3.select('#stop').classed({'hidden': false, 'button': true});	
+	autoplayDate = parseInt(dateInput.value.split("-")[2]);
 	autoplayInterval = setInterval(function() {	  
 		if(autoplayDate < 10){
 			var currentDate = "2015-04-0" + autoplayDate;

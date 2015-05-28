@@ -51,7 +51,7 @@ MultiDataLoader.prototype = Object.create(EventTarget.prototype, {
 	},
 	fileLoaded : {
 		value : function(d){
-			console.log(this.__fileLoadedCount);
+			//console.log(this.__fileLoadedCount);
 			rawData.push(d);
 			this.__fileLoadedCount ++;			
 			if(this.__fileLoadedCount === this.__fileCount){
