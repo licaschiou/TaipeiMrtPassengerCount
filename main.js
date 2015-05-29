@@ -38,7 +38,7 @@ var dateInput = document.getElementById("currentDate");
 var rawData = [];
 var mrtDataset = [];
 var mrtCharts;
-var stationMarkerSize = 6;
+var stationMarkerSize = 3;
 
 var MrtStation = function(){
 	this.address = "";
@@ -238,9 +238,9 @@ var initializeCharts = function(){
 	mrtCharts.append('circle')
 			.attr('class', 'info')						
 			.attr("stroke-width", 1)	
-			.attr("stroke", "#666")		
-			.style("fill-opacity", 0.25) 		
-			.style("fill", "#fff")
+			.attr("stroke", "#fff")		
+			.attr("opacity", 0.25) 		
+			.attr("fill", "#aaa")
 			.attr("r", function(){return zoomScale(currentZoom)*stationMarkerSize;});  			
 
 	mrtCharts.append('circle')
